@@ -1,15 +1,21 @@
 # Task Manager API
 
-A REST API for managing per-user tasks, built with Express, TypeScript, Sequelize, and PostgreSQL. Authentication is JWT-based; every task is scoped to the authenticated user.
+A full-stack task manager: an Express/TypeScript REST API with JWT auth and per-user task CRUD, plus a React frontend that consumes it. Every task is scoped to the authenticated user.
 
 ## Tech stack
 
+**Backend**
 - Express 5 + TypeScript
 - PostgreSQL via Sequelize
 - JWT auth (`jsonwebtoken`) + bcrypt password hashing
 - Zod request validation
 - Jest + supertest for integration tests
 - Docker / docker-compose for containerized runs
+
+**Frontend** (`frontend/`)
+- React + TypeScript + Vite
+- React Router for login/register/dashboard routes
+- axios (JWT attached from `localStorage` via an interceptor)
 
 ## Prerequisites
 
@@ -46,6 +52,18 @@ JWT_EXPIRES_IN=1d
    npm run dev
    ```
    On success you should see `Database connection established.`, `Models synchronized.`, and `Server running on http://localhost:3000`.
+
+## Running the frontend
+
+The frontend is a separate app in `frontend/` and expects the API above to already be running on `http://localhost:3000`.
+
+```
+cd frontend
+npm install
+npm run dev
+```
+
+Open the printed URL (`http://localhost:5173` by default). It talks to the API at `http://localhost:3000/api`; override this by setting `VITE_API_URL` in a `frontend/.env` file if needed.
 
 ## Running with Docker Compose
 
@@ -103,4 +121,9 @@ src/
   app.ts                   Express app (no listen — used directly by tests)
   server.ts                Connects to the DB, syncs models, then starts listening
 tests/                     Jest + supertest integration tests
+frontend/
+  src/api/client.ts        axios instance, attaches JWT from localStorage
+  src/context/AuthContext.tsx  Login/register/logout + session persistence
+  src/components/          ProtectedRoute, TaskItem
+  src/pages/               LoginPage, RegisterPage, DashboardPage
 ```
