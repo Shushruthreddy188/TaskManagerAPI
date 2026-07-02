@@ -1,129 +1,441 @@
 # Task Manager API
 
-A full-stack task manager: an Express/TypeScript REST API with JWT auth and per-user task CRUD, plus a React frontend that consumes it. Every task is scoped to the authenticated user.
+A full-stack task management application built with a TypeScript-first stack. The project includes an Express REST API with JWT authentication, PostgreSQL persistence through Sequelize, and a React frontend that allows users to register, log in, and manage their own tasks securely.
 
-## Tech stack
+Each task is scoped to the authenticated user, ensuring users can only create, view, update, and delete their own tasks.
 
-**Backend**
-- Express 5 + TypeScript
-- PostgreSQL via Sequelize
-- JWT auth (`jsonwebtoken`) + bcrypt password hashing
-- Zod request validation
-- Jest + supertest for integration tests
-- Docker / docker-compose for containerized runs
+---
 
-**Frontend** (`frontend/`)
-- React + TypeScript + Vite
-- React Router for login/register/dashboard routes
-- axios (JWT attached from `localStorage` via an interceptor)
+## ✨ Features
+
+### Authentication
+
+- User Registration
+- User Login
+- JWT-based Authentication
+- Secure Password Hashing with bcrypt
+- Protected API Routes
+- Persistent User Sessions
+
+### Task Management
+
+- Create Tasks
+- View All Tasks
+- View Individual Tasks
+- Update Tasks
+- Delete Tasks
+- Per-user Task Ownership
+
+### Validation & Security
+
+- Request validation with Zod
+- Password hashing using bcrypt
+- JWT Authorization Middleware
+- Ownership verification for all task operations
+- Centralized error handling
+
+### Frontend
+
+- Login & Registration pages
+- Protected Dashboard
+- Task CRUD Interface
+- Automatic JWT attachment using Axios Interceptors
+- Session persistence using localStorage
+
+### Backend
+
+- RESTful API
+- PostgreSQL Database
+- Sequelize ORM
+- Docker Support
+- Integration Tests with Jest & Supertest
+
+---
+
+# 🛠 Tech Stack
+
+## Backend
+
+- Node.js
+- Express 5
+- TypeScript
+- PostgreSQL
+- Sequelize ORM
+- JWT
+- bcrypt
+- Zod
+- Jest
+- supertest
+- Docker
+- Docker Compose
+
+## Frontend
+
+- React
+- TypeScript
+- Vite
+- React Router
+- Axios
+- Context API
+
+---
+
+# 🏗 Architecture
+
+```text
+                User
+                  │
+                  ▼
+      React + TypeScript Frontend
+                  │
+          Axios HTTP Requests
+                  │
+                  ▼
+      Express + TypeScript REST API
+                  │
+        JWT Authentication Middleware
+                  │
+       Controllers + Business Logic
+                  │
+           Sequelize ORM Models
+                  │
+                  ▼
+             PostgreSQL Database
+```
+
+The frontend communicates exclusively with the Express REST API. All authentication, validation, authorization, and database operations are handled by the backend.
+
+---
+
+# 📂 Project Structure
+
+```text
+TaskManagerAPI
+│
+├── src
+│   ├── config
+│   │   └── database.ts
+│   │
+│   ├── controllers
+│   │   ├── auth.controller.ts
+│   │   └── task.controller.ts
+│   │
+│   ├── middleware
+│   │   ├── auth.middleware.ts
+│   │   ├── validate.ts
+│   │   └── error.middleware.ts
+│   │
+│   ├── models
+│   │   ├── User.ts
+│   │   └── Task.ts
+│   │
+│   ├── routes
+│   │   ├── auth.routes.ts
+│   │   └── task.routes.ts
+│   │
+│   ├── validation
+│   │   └── schemas.ts
+│   │
+│   ├── app.ts
+│   └── server.ts
+│
+├── tests
+│
+├── frontend
+│   ├── src
+│   │   ├── api
+│   │   ├── components
+│   │   ├── context
+│   │   └── pages
+│   │
+│   └── vite.config.ts
+│
+├── Dockerfile
+├── docker-compose.yml
+├── package.json
+└── README.md
+```
+
+---
+
+# 🔐 Authentication Endpoints
+
+Base URL
+
+```
+/api/auth
+```
+
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| POST | /register | Register a new user |
+| POST | /login | Login user and receive JWT |
+
+### Register
+
+```http
+POST /api/auth/register
+```
+
+Request
+
+```json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+Response
+
+```json
+{
+  "id": 1,
+  "email": "user@example.com",
+  "token": "<jwt-token>"
+}
+```
+
+---
+
+### Login
+
+```http
+POST /api/auth/login
+```
+
+Request
+
+```json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+---
+
+# ✅ Task Endpoints
+
+Base URL
+
+```
+/api/tasks
+```
+
+All routes require
+
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| POST | / | Create Task |
+| GET | / | Get All Tasks |
+| GET | /:id | Get Single Task |
+| PUT | /:id | Update Task |
+| DELETE | /:id | Delete Task |
+
+Example Request
+
+```json
+{
+  "title": "Practice TypeScript",
+  "description": "Understand Express Backend",
+  "status": "pending"
+}
+```
+
+Supported Status Values
+
+```
+pending
+in-progress
+completed
+```
+
+---
+
+# 🚀 Running Locally
 
 ## Prerequisites
 
 - Node.js 20+
-- A running PostgreSQL instance (local install, or Docker)
+- PostgreSQL
+- npm
+- Docker (optional)
 
-## Environment variables
+### Clone Repository
 
-Create a `.env` file in the project root:
+```bash
+git clone https://github.com/Shushruthreddy188/TaskManagerAPI.git
 
+cd TaskManagerAPI
 ```
+
+---
+
+### Create Environment File
+
+Create `.env`
+
+```env
 PORT=3000
+
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=task_manager_db
 DB_USER=postgres
 DB_PASSWORD=postgres
+
 JWT_SECRET=super_secret_change_me
 JWT_EXPIRES_IN=1d
 ```
 
-## Running locally
+---
 
-1. Start a PostgreSQL instance matching the `.env` credentials. Quickest option, with Docker:
-   ```
-   docker run --name tm-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=task_manager_db -p 5432:5432 -d postgres
-   ```
-2. Install dependencies:
-   ```
-   npm install
-   ```
-3. Start the dev server (auto-restarts on change):
-   ```
-   npm run dev
-   ```
-   On success you should see `Database connection established.`, `Models synchronized.`, and `Server running on http://localhost:3000`.
+### Start PostgreSQL using Docker
 
-## Running the frontend
-
-The frontend is a separate app in `frontend/` and expects the API above to already be running on `http://localhost:3000`.
-
+```bash
+docker run \
+--name tm-postgres \
+-e POSTGRES_PASSWORD=postgres \
+-e POSTGRES_DB=task_manager_db \
+-p 5432:5432 \
+-d postgres
 ```
-cd frontend
+
+---
+
+### Install Dependencies
+
+```bash
 npm install
+```
+
+---
+
+### Run Backend
+
+```bash
 npm run dev
 ```
 
-Open the printed URL (`http://localhost:5173` by default). It talks to the API at `http://localhost:3000/api`; override this by setting `VITE_API_URL` in a `frontend/.env` file if needed.
-
-## Running with Docker Compose
-
-Runs the API and its own PostgreSQL container together, with data persisted in a named volume:
+Backend
 
 ```
+http://localhost:3000
+```
+
+---
+
+# 💻 Running Frontend
+
+```bash
+cd frontend
+
+npm install
+
+npm run dev
+```
+
+Frontend
+
+```
+http://localhost:5173
+```
+
+By default it connects to
+
+```
+http://localhost:3000/api
+```
+
+Override using
+
+```
+frontend/.env
+```
+
+```env
+VITE_API_URL=http://localhost:3000/api
+```
+
+---
+
+# 🐳 Running with Docker Compose
+
+```bash
 docker compose up --build
 ```
 
-The app is reachable at `http://localhost:3000`. This uses its own `db` service on the compose network, independent of any local Postgres you may already have running.
-
-## Running tests
-
-Tests run against a real PostgreSQL database (the same one pointed to by `.env`), using Jest + supertest:
+Backend
 
 ```
+http://localhost:3000
+```
+
+The application runs alongside its own PostgreSQL container with persistent storage.
+
+---
+
+# 🧪 Running Tests
+
+```bash
 npm test
 ```
 
-Each test file cleans up the rows it creates, so the suite is safe to run repeatedly.
+The project uses
 
-## API reference
+- Jest
+- supertest
 
-All request/response bodies are JSON.
+to perform integration testing against a PostgreSQL database.
 
-### Auth — `/api/auth`
+---
 
-| Method | Path | Body | Notes |
-|---|---|---|---|
-| POST | `/register` | `{ email, password }` | `password` min 8 chars. Returns `{ id, email, token }`. 409 if email taken. |
-| POST | `/login` | `{ email, password }` | Returns `{ id, email, token }`. 401 on bad credentials. |
+# 🎯 What This Project Demonstrates
 
-### Tasks — `/api/tasks`
+This project showcases experience with:
 
-All task routes require `Authorization: Bearer <token>` and only ever operate on the caller's own tasks (other users' tasks 404, they don't leak as 403).
+- Full-stack application development
+- REST API design
+- Express & TypeScript
+- React + TypeScript
+- PostgreSQL
+- Sequelize ORM
+- JWT Authentication
+- Secure password hashing
+- Authorization middleware
+- Request validation
+- Database relationships
+- Docker containerization
+- Integration testing
+- Client-server communication using Axios
 
-| Method | Path | Body | Notes |
-|---|---|---|---|
-| POST | `/` | `{ title, description?, status? }` | `status` one of `pending` / `in-progress` / `completed`, defaults to `pending`. |
-| GET | `/` | — | Lists the caller's tasks. |
-| GET | `/:id` | — | 404 if not found or not owned by caller. |
-| PUT | `/:id` | `{ title?, description?, status? }` | At least one field required. |
-| DELETE | `/:id` | — | Returns 204. |
+---
 
-## Project structure
+# 🔮 Future Improvements
 
-```
-src/
-  config/database.ts       Sequelize connection
-  models/                  User, Task (with the one-to-many association)
-  controllers/              Route handlers
-  routes/                  Express routers
-  middleware/              JWT auth guard, zod validation, centralized error handling
-  validation/schemas.ts    Zod schemas for request bodies
-  app.ts                   Express app (no listen — used directly by tests)
-  server.ts                Connects to the DB, syncs models, then starts listening
-tests/                     Jest + supertest integration tests
-frontend/
-  src/api/client.ts        axios instance, attaches JWT from localStorage
-  src/context/AuthContext.tsx  Login/register/logout + session persistence
-  src/components/          ProtectedRoute, TaskItem
-  src/pages/               LoginPage, RegisterPage, DashboardPage
-```
+- Task Priority
+- Due Dates
+- Search
+- Pagination
+- Sorting
+- Task Categories
+- Refresh Tokens
+- CI/CD using GitHub Actions
+- Cloud Deployment (AWS / Render / Railway)
+- Email Verification
+- Password Reset
+- Dark Mode
+- Responsive UI Improvements
+
+---
+
+## 👨‍💻 Author
+
+**Shushruth Kumar Reddy Mandadi**
+
+GitHub: https://github.com/Shushruthreddy188
